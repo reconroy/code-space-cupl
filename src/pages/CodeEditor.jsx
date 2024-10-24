@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Monaco from '@monaco-editor/react';
 import hljs from 'highlight.js/lib/core';
 import 'highlight.js/styles/github.css';
 import useThemeStore from '../store/useThemeStore';
+import MenuPanel from '../components/MenuPanel'; // Import MenuPanel
 // Import languages you want highlight.js to detect
 import javascript from 'highlight.js/lib/languages/javascript';
 import python from 'highlight.js/lib/languages/python';
@@ -32,6 +33,8 @@ hljs.registerLanguage('nodejs', javascript); // Node.js is based on JavaScript
 const CodeEditor = ({ code, setCode, setLanguage }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const editorRef = useRef(null);
+  const [fontSize, setFontSize] = useState(14); // State for font size
+  const [showSlider, setShowSlider] = useState(false); // State for slider visibility
 
   // Function to detect the language using highlight.js
   const detectLanguage = (code) => {
@@ -47,9 +50,12 @@ const CodeEditor = ({ code, setCode, setLanguage }) => {
 
   useEffect(() => {
     if (editorRef.current) {
-      editorRef.current.updateOptions({ theme: isDarkMode ? 'vs-dark' : 'light' });
+      editorRef.current.updateOptions({ 
+        theme: isDarkMode ? 'vs-dark' : 'light',
+        fontSize: fontSize // Update font size
+      });
     }
-  }, [isDarkMode]);
+  }, [isDarkMode, fontSize]);
 
   const handleEditorChange = (value) => {
     setCode(value);
@@ -57,7 +63,10 @@ const CodeEditor = ({ code, setCode, setLanguage }) => {
 
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
-    editor.updateOptions({ theme: isDarkMode ? 'vs-dark' : 'light' });
+    editor.updateOptions({ 
+      theme: isDarkMode ? 'vs-dark' : 'light',
+      fontSize: fontSize // Set initial font size
+    });
 
     // Enable Emmet for HTML, CSS, and JavaScript
     monaco.languages.registerCompletionItemProvider('html', {
@@ -89,8 +98,25 @@ const CodeEditor = ({ code, setCode, setLanguage }) => {
     `, 'ts:filename/console.d.ts');
   };
 
+  const toggleFontSizeSlider = () => {
+    setShowSlider(!showSlider);
+  };
+
   return (
     <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+      <MenuPanel code={code} language={detectLanguage(code)} toggleFontSizeSlider={toggleFontSizeSlider} />
+      {showSlider && (
+        <div style={{ position: 'absolute', top: 10, right: 60, zIndex: 10, backgroundColor: isDarkMode ? '#333' : '#fff', padding: '10px', borderRadius: '5px', boxShadow: '0 0 10px rgba(0,0,0,0.1)' }}>
+          <input 
+            type="range" 
+            min="10" 
+            max="30" 
+            value={fontSize} 
+            onChange={(e) => setFontSize(Number(e.target.value))}
+            style={{ width: '100px' }}
+          />
+        </div>
+      )}
       <Monaco
         height="100%"
         width="100%"

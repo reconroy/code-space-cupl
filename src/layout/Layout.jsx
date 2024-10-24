@@ -4,7 +4,6 @@ import CodeEditor from '../pages/CodeEditor';
 import Footer from '../components/Footer';
 import MenuPanel from '../components/MenuPanel';
 import useThemeStore from '../store/useThemeStore';
-
 const Layout = () => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const [code, setCode] = useState('');
@@ -16,11 +15,13 @@ const Layout = () => {
         <Navbar />
       </header>
       
-      <main className="flex-grow relative flex">
-        <div className="flex-grow">
+      <main className="flex-grow grid grid-cols-12 relative">
+        <div className="col-span-10">
           <CodeEditor code={code} setCode={setCode} setLanguage={setLanguage} />
         </div>
-        <MenuPanel code={code} language={language} />
+        <div className="col-span-2">
+          <MenuPanel code={code} language={language} />
+        </div>
       </main>
       
       <Footer />
