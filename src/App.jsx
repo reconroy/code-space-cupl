@@ -1,9 +1,10 @@
-import CodeEditor from "./components/CodeEditor";
+import Layout from "./layout/Layout";
+import './App.css';
 
 function App() {
   return (
     <>
-      <CodeEditor/>
+      <Layout />
     </>
   );
 }
