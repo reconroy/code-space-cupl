@@ -1,17 +1,37 @@
 import React from 'react';
 import { FaDownload } from 'react-icons/fa';
-import useThemeStore from '.././store/useThemeStore';
+import useThemeStore from '../store/useThemeStore';
 
-const MenuPanel = ({ code }) => {
+const languageExtensions = {
+  javascript: 'js',
+  python: 'py',
+  css: 'css',
+  java: 'java',
+  cpp: 'cpp',
+  xml: 'html',
+  json: 'json',
+  markdown: 'md',
+  c: 'c',
+  csharp: 'cs',
+  html: 'html', // Added html
+  plaintext: 'txt', // Default to txt for unknown languages
+};
+
+const MenuPanel = ({ code, language }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
 
   const handleDownload = () => {
+    const fileExtension = languageExtensions[language] || 'txt';
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `code-space-${timestamp}.${fileExtension}`;
+
     const element = document.createElement('a');
     const file = new Blob([code], { type: 'text/plain' });
     element.href = URL.createObjectURL(file);
-    element.download = 'code.txt';
+    element.download = fileName;
     document.body.appendChild(element);
     element.click();
+    document.body.removeChild(element);
   };
 
   return (

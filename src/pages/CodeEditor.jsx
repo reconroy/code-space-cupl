@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Monaco from '@monaco-editor/react';
 import hljs from 'highlight.js/lib/core';
 import 'highlight.js/styles/github.css';
-import AIChatbot from '../chatbots/AIChatbot';
 import useThemeStore from '../store/useThemeStore';
 // Import languages you want highlight.js to detect
 import javascript from 'highlight.js/lib/languages/javascript';
@@ -30,9 +29,7 @@ hljs.registerLanguage('react', javascript); // React is based on JavaScript
 hljs.registerLanguage('angular', javascript); // Angular is based on JavaScript
 hljs.registerLanguage('nodejs', javascript); // Node.js is based on JavaScript
 
-const CodeEditor = () => {
-  const [code, setCode] = useState('');
-  const [language, setLanguage] = useState('plaintext');
+const CodeEditor = ({ code, setCode, setLanguage }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const editorRef = useRef(null);
 
@@ -46,7 +43,7 @@ const CodeEditor = () => {
   useEffect(() => {
     const detectedLang = detectLanguage(code);
     setLanguage(detectedLang);
-  }, [code]);
+  }, [code, setLanguage]);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -58,9 +55,38 @@ const CodeEditor = () => {
     setCode(value);
   };
 
-  const handleEditorDidMount = (editor) => {
+  const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
     editor.updateOptions({ theme: isDarkMode ? 'vs-dark' : 'light' });
+
+    // Enable Emmet for HTML, CSS, and JavaScript
+    monaco.languages.registerCompletionItemProvider('html', {
+      provideCompletionItems: () => {
+        return {
+          suggestions: [
+            {
+              label: 'div',
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              insertText: '<div>\n\t$0\n</div>',
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              documentation: 'Insert a div element'
+            }
+          ]
+        };
+      }
+    });
+
+    // Enable auto-completion and suggestions
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+      target: monaco.languages.typescript.ScriptTarget.ES6,
+      allowNonTsExtensions: true
+    });
+
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(`
+      declare var console: {
+        log(message?: any, ...optionalParams: any[]): void;
+      };
+    `, 'ts:filename/console.d.ts');
   };
 
   return (
@@ -68,15 +94,25 @@ const CodeEditor = () => {
       <Monaco
         height="100%"
         width="100%"
-        language={language}
+        language={detectLanguage(code)}
         theme={isDarkMode ? 'vs-dark' : 'light'}
         value={code}
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
-        options={{ padding: { top: 20, bottom: 20 }, scrollBeyondLastLine: false }}
+        options={{
+          padding: { top: 20, bottom: 20 },
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+          wordWrap: 'on',
+          minimap: { enabled: false },
+          suggestOnTriggerCharacters: true,
+          quickSuggestions: true,
+          autoClosingBrackets: 'always',
+          autoIndent: 'full',
+          formatOnType: true,
+          formatOnPaste: true
+        }}
       />
-      {/* <AIChatbot isDarkMode={isDarkMode} code={code} /> */}
-      
     </div>
   );
 };

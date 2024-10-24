@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import CodeEditor from '../pages/CodeEditor';
 import Footer from '../components/Footer';
 import MenuPanel from '../components/MenuPanel';
-import useThemeStore from '.././store/useThemeStore';
+import useThemeStore from '../store/useThemeStore';
 
 const Layout = () => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
+  const [code, setCode] = useState('');
+  const [language, setLanguage] = useState('plaintext');
 
   return (
     <div className={`flex flex-col min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
@@ -16,11 +18,9 @@ const Layout = () => {
       
       <main className="flex-grow relative flex">
         <div className="flex-grow">
-          <CodeEditor />
+          <CodeEditor code={code} setCode={setCode} setLanguage={setLanguage} />
         </div>
-        <div className="w-1/5">
-          <MenuPanel code="Your code here" theme={isDarkMode ? 'dark' : 'light'} />
-        </div>
+        <MenuPanel code={code} language={language} />
       </main>
       
       <Footer />
