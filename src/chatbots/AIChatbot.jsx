@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaRobot, FaTimes } from 'react-icons/fa';
+import { HfInference } from '@huggingface/inference';
 
 const AIChatbot = ({ isDarkMode, code }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
+  const hf = new HfInference(import.meta.env.VITE_HUGGINGFACE_API_KEY);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -20,25 +24,41 @@ const AIChatbot = ({ isDarkMode, code }) => {
     const userMessage = { text: input, sender: 'user' };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setIsLoading(true);
 
-    // Here you would typically make an API call to your AI service
-    // For now, we'll just simulate a response
-    setTimeout(() => {
-      const aiMessage = { text: "I'm sorry, I'm just a placeholder AI. I can't actually help with your code yet!", sender: 'ai' };
+    try {
+      const response = await hf.textGeneration({
+        model: 'gpt2',
+        inputs: `Code: ${code}\n\nQuestion: ${input}\n\nAnswer:`,
+        parameters: {
+          max_new_tokens: 250,
+          temperature: 0.7,
+          top_p: 0.95,
+          repetition_penalty: 1.2,
+        },
+      });
+
+      const aiMessage = { text: response.generated_text.trim(), sender: 'ai' };
       setMessages(prev => [...prev, aiMessage]);
-    }, 1000);
+    } catch (error) {
+      console.error('Error calling Hugging Face API:', error);
+      const errorMessage = { text: "Sorry, I couldn't process that request. Please try again.", sender: 'ai' };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <>
       <button
-        className={`fixed bottom-4 right-4 p-3 rounded-full ${isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'}`}
+        className={`fixed bottom-20 right-4 p-3 rounded-full ${isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'} z-10`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <FaRobot size={24} />
       </button>
       {isOpen && (
-        <div className={`fixed bottom-20 right-4 w-80 h-96 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} rounded-lg shadow-lg flex flex-col`}>
+        <div className={`fixed bottom-36 right-4 w-80 h-96 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} rounded-lg shadow-lg flex flex-col z-10`}>
           <div className="flex justify-between items-center p-4 border-b">
             <h3 className="font-bold">AI Assistant</h3>
             <button onClick={() => setIsOpen(false)}><FaTimes /></button>
@@ -51,6 +71,7 @@ const AIChatbot = ({ isDarkMode, code }) => {
                 </span>
               </div>
             ))}
+            {isLoading && <div className="text-center">AI is thinking...</div>}
             <div ref={messagesEndRef} />
           </div>
           <form onSubmit={handleSubmit} className="p-4 border-t">

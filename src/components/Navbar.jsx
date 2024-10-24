@@ -1,28 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FaBars, FaMoon, FaSun } from 'react-icons/fa';
 import Sidebar from './Sidebar';
+import useThemeStore from '.././store/useThemeStore';
 
 const Navbar = () => {
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedMode = localStorage.getItem('darkMode');
-    return savedMode === null ? true : JSON.parse(savedMode);
-  });
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
+  const toggleDarkMode = useThemeStore((state) => state.toggleDarkMode);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
-    // Dispatch a custom event to notify other components
-    window.dispatchEvent(new Event('themeChange'));
-  }, [isDarkMode]);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode((prevMode) => !prevMode);
-  };
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prevState) => !prevState);
@@ -30,10 +14,9 @@ const Navbar = () => {
 
   return (
     <>
-     <nav className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-800'} shadow-md transition-colors duration-300`}>
+      <nav className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-800'} shadow-md transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left side - Menu button */}
             <div className="flex-shrink-0">
               <button 
                 className={`${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-800'} focus:outline-none`}
@@ -43,16 +26,12 @@ const Navbar = () => {
               </button>
             </div>
 
-            {/* Center - CodeSpace label */}
             <div className="flex-grow flex justify-center">
               <span className="text-2xl font-bold">CodeSpace</span>
             </div>
 
-            {/* Right side - Theme toggle, Login, and Signup */}
             <div className="flex items-center space-x-4">
-              {/* Theme toggle */}
               <div className="relative">
-                {/* Theme toggle for larger screens */}
                 <div className="hidden sm:flex items-center">
                   <FaSun className={`h-5 w-5 ${isDarkMode ? 'text-gray-500' : 'text-yellow-500'} mr-2`} />
                   <label className="switch relative inline-block w-14 h-7">
@@ -66,7 +45,6 @@ const Navbar = () => {
                   </label>
                   <FaMoon className={`h-5 w-5 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} ml-2`} />
                 </div>
-                {/* Theme toggle for smaller screens */}
                 <button 
                   className="sm:hidden focus:outline-none"
                   onClick={toggleDarkMode}

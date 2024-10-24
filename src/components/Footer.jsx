@@ -1,22 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import useThemeStore from '../store/useThemeStore';
 
 const Footer = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    const darkModePreference = localStorage.getItem('darkMode') === 'true';
-    setIsDarkMode(darkModePreference);
-
-    const handleThemeChange = () => {
-      setIsDarkMode(localStorage.getItem('darkMode') === 'true');
-    };
-
-    window.addEventListener('themeChange', handleThemeChange);
-
-    return () => {
-      window.removeEventListener('themeChange', handleThemeChange);
-    };
-  }, []);
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
 
   return (
     <footer className={`${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-600'} py-4 absolute bottom-0 w-full border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} transition-colors duration-300`}>
