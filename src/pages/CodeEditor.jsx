@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import Monaco from '@monaco-editor/react';
 import hljs from 'highlight.js/lib/core';
 import 'highlight.js/styles/github.css';
-
+import AIChatbot from '../chatbots/AIChatbot';
+import useThemeStore from '../store/useThemeStore';
 // Import languages you want highlight.js to detect
 import javascript from 'highlight.js/lib/languages/javascript';
 import python from 'highlight.js/lib/languages/python';
@@ -32,10 +33,7 @@ hljs.registerLanguage('nodejs', javascript); // Node.js is based on JavaScript
 const CodeEditor = () => {
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('plaintext');
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedMode = localStorage.getItem('darkMode');
-    return savedMode === null ? true : JSON.parse(savedMode);
-  });
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const editorRef = useRef(null);
 
   // Function to detect the language using highlight.js
@@ -45,27 +43,16 @@ const CodeEditor = () => {
   };
 
   // Update the language whenever the code changes
-
   useEffect(() => {
     const detectedLang = detectLanguage(code);
     setLanguage(detectedLang);
   }, [code]);
 
   useEffect(() => {
-    const handleThemeChange = () => {
-      const newDarkMode = localStorage.getItem('darkMode') === 'true';
-      setIsDarkMode(newDarkMode);
-      if (editorRef.current) {
-        editorRef.current.updateOptions({ theme: newDarkMode ? 'vs-dark' : 'light' });
-      }
-    };
-
-    window.addEventListener('themeChange', handleThemeChange);
-
-    return () => {
-      window.removeEventListener('themeChange', handleThemeChange);
-    };
-  }, []);
+    if (editorRef.current) {
+      editorRef.current.updateOptions({ theme: isDarkMode ? 'vs-dark' : 'light' });
+    }
+  }, [isDarkMode]);
 
   const handleEditorChange = (value) => {
     setCode(value);
@@ -88,6 +75,8 @@ const CodeEditor = () => {
         onMount={handleEditorDidMount}
         options={{ padding: { top: 20, bottom: 20 }, scrollBeyondLastLine: false }}
       />
+      {/* <AIChatbot isDarkMode={isDarkMode} code={code} /> */}
+      
     </div>
   );
 };
