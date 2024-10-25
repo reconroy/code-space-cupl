@@ -1,6 +1,8 @@
 import React from 'react';
 import { FaDownload, FaTextHeight } from 'react-icons/fa';
 import useThemeStore from '../store/useThemeStore';
+import useFontSizeStore from '../store/useFontSizeStore';
+import FontSizeSlider from '../sub_components/FontSizeSlider';
 
 const languageExtensions = {
   javascript: 'js',
@@ -17,8 +19,9 @@ const languageExtensions = {
   plaintext: 'txt',
 };
 
-const MenuPanel = ({ code, language, toggleFontSizeSlider }) => {
+const MenuPanel = ({ code, language }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
+  const { showFontSizeSlider, toggleFontSizeSlider } = useFontSizeStore();
 
   const handleDownload = () => {
     const fileExtension = languageExtensions[language] || 'txt';
@@ -35,31 +38,48 @@ const MenuPanel = ({ code, language, toggleFontSizeSlider }) => {
   };
 
   const handleToggleFontSizeSlider = () => {
-    toggleFontSizeSlider();
+    if (typeof toggleFontSizeSlider === 'function') {
+      toggleFontSizeSlider();
+    } else {
+      console.error('toggleFontSizeSlider is not a function');
+    }
   };
 
-  return (
-    <div className={`fixed top-0 right-0 h-full w-1/10 p-4 shadow-lg flex flex-col 
-      ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'}`}>
-      <h2 className="text-xl font-bold mb-4">Menu</h2>
+  const buttonClasses = `
+  p-2 mb-4 
+  rounded-full md:rounded 
+  hover:bg-opacity-75 transition-transform transform hover:scale-105 
+  ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}
+`;
+
+return (
+  <div className={`w-16 md:w-20 h-full py-2 px-1 md:px-2 shadow-lg flex flex-col items-center justify-start
+    ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'}`}>
+    <button 
+      onClick={handleDownload} 
+      className={buttonClasses}
+      aria-label="Download Code"
+      title="Download Code"
+    >
+      <FaDownload className="text-lg md:text-xl" />
+    </button>
+    <div className="relative">
+      {showFontSizeSlider && (
+        <div className="absolute right-full mr-2 top-0">
+          <FontSizeSlider />
+        </div>
+      )}
       <button 
-        onClick={handleDownload} 
-        className={`p-2 mb-4 rounded hover:bg-opacity-75 transition-transform transform hover:scale-105 
-          ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}`}
-        aria-label="Download Code"
-      >
-        <FaDownload className="text-2xl" />
-      </button>
-      <button 
-        onClick={handleToggleFontSizeSlider} 
-        className={`p-2 rounded hover:bg-opacity-75 transition-transform transform hover:scale-105 
-          ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}`}
+        onClick={toggleFontSizeSlider} 
+        className={buttonClasses}
         aria-label="Toggle Font Size Slider"
+        title="Toggle Font Size"
       >
-        <FaTextHeight className="text-2xl" />
+        <FaTextHeight className="text-lg md:text-xl" />
       </button>
     </div>
-  );
+  </div>
+);
 };
 
 export default MenuPanel;
