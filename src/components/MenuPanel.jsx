@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaDownload, FaTextHeight } from 'react-icons/fa';
+import { FaDownload, FaTextHeight, FaSave } from 'react-icons/fa';
 import useThemeStore from '../store/useThemeStore';
 import useFontSizeStore from '../store/useFontSizeStore';
 import FontSizeSlider from '../sub_components/FontSizeSlider';
@@ -19,7 +19,7 @@ const languageExtensions = {
   plaintext: 'txt',
 };
 
-const MenuPanel = ({ code, language }) => {
+const MenuPanel = ({ code, language, onSave }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const { showFontSizeSlider, toggleFontSizeSlider } = useFontSizeStore();
 
@@ -62,6 +62,14 @@ return (
       title="Download Code"
     >
       <FaDownload className="text-lg md:text-xl" />
+    </button>
+    <button 
+      onClick={onSave} 
+      className={buttonClasses}
+      aria-label="Save Code"
+      title="Save Code"
+    >
+      <FaSave className="text-lg md:text-xl" />
     </button>
     <div className="relative">
       {showFontSizeSlider && (

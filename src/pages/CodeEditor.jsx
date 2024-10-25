@@ -1,4 +1,4 @@
-import React, { useEffect, useRef , useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Monaco from '@monaco-editor/react';
 import hljs from 'highlight.js/lib/core';
 import 'highlight.js/styles/github.css';
@@ -33,7 +33,9 @@ hljs.registerLanguage('nodejs', javascript); // Node.js is based on JavaScript
 const CodeEditor = ({ code, setCode, setLanguage }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const editorRef = useRef(null);
-  const { fontSize, showFontSizeSlider } = useFontSizeStore();
+  const { fontSize, setFontSize } = useFontSizeStore();
+  const [showSlider, setShowSlider] = useState(false);
+
   // Function to detect the language using highlight.js
   const detectLanguage = (code) => {
     const result = hljs.highlightAuto(code);
@@ -125,6 +127,24 @@ const CodeEditor = ({ code, setCode, setLanguage }) => {
           formatOnPaste: true
         }}
       />
+      {showSlider && (
+        <div className="absolute bottom-4 right-4 bg-white dark:bg-gray-800 p-2 rounded shadow">
+          <input
+            type="range"
+            min="12"
+            max="24"
+            value={fontSize}
+            onChange={(e) => setFontSize(Number(e.target.value))}
+            className="w-32"
+          />
+        </div>
+      )}
+      <button
+        onClick={toggleFontSizeSlider}
+        className="absolute bottom-4 right-4 bg-blue-500 text-white p-2 rounded"
+      >
+        {showSlider ? 'Hide' : 'Show'} Font Size Slider
+      </button>
     </div>
   );
 };
