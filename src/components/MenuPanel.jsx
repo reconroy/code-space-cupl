@@ -19,7 +19,7 @@ const languageExtensions = {
   plaintext: 'txt',
 };
 
-const MenuPanel = ({ code, language }) => {
+const MenuPanel = ({ code, language, onLanguageChange }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const { showFontSizeSlider, toggleFontSizeSlider } = useFontSizeStore();
 
@@ -49,16 +49,22 @@ const MenuPanel = ({ code, language }) => {
       >
         <FaDownload className="text-lg md:text-xl" />
       </button>
-      <button 
-        onClick={toggleFontSizeSlider} 
-        className={`p-2 mb-4 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-105 
-          ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}`}
-        aria-label="Adjust Font Size"
-        title="Adjust Font Size"
-      >
-        <FaTextHeight className="text-lg md:text-xl" />
-      </button>
-      {showFontSizeSlider && <FontSizeSlider />}
+      <div className="relative">
+        <button 
+          onClick={toggleFontSizeSlider} 
+          className={`p-2 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-105 
+            ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}`}
+          aria-label="Adjust Font Size"
+          title="Adjust Font Size"
+        >
+          <FaTextHeight className="text-lg md:text-xl" />
+        </button>
+        {showFontSizeSlider && (
+          <div className="absolute right-full top-0 mr-2">
+            <FontSizeSlider />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

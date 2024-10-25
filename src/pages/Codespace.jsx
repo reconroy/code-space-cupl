@@ -49,7 +49,7 @@ const CodespacePage = () => {
 
   useEffect(() => {
     fetchCodespace();
-  }, [fetchCodespace]);
+  }, [fetchCodespace, slug]);  // Add slug as a dependency
 
   const saveCode = useCallback(async (codeToSave, langToSave) => {
     try {
@@ -62,7 +62,7 @@ const CodespacePage = () => {
   }, [slug]);
 
   const debouncedSave = useCallback(
-    debounce((codeToSave, langToSave) => saveCode(codeToSave, langToSave), 3000),
+    debounce((codeToSave, langToSave) => saveCode(codeToSave, langToSave), 1),
     [saveCode]
   );
 
@@ -96,6 +96,7 @@ const CodespacePage = () => {
       </div>
       <div className="absolute top-0 right-0 h-full">
         <MenuPanel 
+          code={code}  // Add this line
           language={language}
           onLanguageChange={handleLanguageChange}
         />
