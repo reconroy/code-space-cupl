@@ -4,7 +4,8 @@ import hljs from 'highlight.js/lib/core';
 import 'highlight.js/styles/github.css';
 import useThemeStore from '../store/useThemeStore';
 import useFontSizeStore from '../store/useFontSizeStore';
-// Import languages you want highlight.js to detect
+
+// Import languages for highlight.js detection
 import javascript from 'highlight.js/lib/languages/javascript';
 import python from 'highlight.js/lib/languages/python';
 import css from 'highlight.js/lib/languages/css';
@@ -15,38 +16,15 @@ import json from 'highlight.js/lib/languages/json';
 import markdown from 'highlight.js/lib/languages/markdown';
 import csharp from 'highlight.js/lib/languages/csharp';
 
-// Register the languages with highlight.js
-hljs.registerLanguage('javascript', javascript);
-hljs.registerLanguage('python', python);
-hljs.registerLanguage('css', css);
-hljs.registerLanguage('java', java);
-hljs.registerLanguage('cpp', cpp);
-hljs.registerLanguage('xml', xml);
-hljs.registerLanguage('json', json);
-hljs.registerLanguage('markdown', markdown);
-hljs.registerLanguage('c', cpp); // C language is similar to C++
-hljs.registerLanguage('csharp', csharp);
-hljs.registerLanguage('react', javascript); // React is based on JavaScript
-hljs.registerLanguage('angular', javascript); // Angular is based on JavaScript
-hljs.registerLanguage('nodejs', javascript); // Node.js is based on JavaScript
+// Register languages with highlight.js
+const languages = { javascript, python, css, java, cpp, xml, json, markdown, csharp };
+Object.entries(languages).forEach(([name, lang]) => hljs.registerLanguage(name, lang));
 
-const CodeEditor = ({ code, setCode, setLanguage }) => {
+const CodeEditor = ({ code, setCode, language, setLanguage }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const editorRef = useRef(null);
   const { fontSize, setFontSize } = useFontSizeStore();
   const [showSlider, setShowSlider] = useState(false);
-
-  // Function to detect the language using highlight.js
-  const detectLanguage = (code) => {
-    const result = hljs.highlightAuto(code);
-    return result.language || 'plaintext';
-  };
-
-  // Update the language whenever the code changes
-  useEffect(() => {
-    const detectedLang = detectLanguage(code);
-    setLanguage(detectedLang);
-  }, [code, setLanguage]);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -65,27 +43,10 @@ const CodeEditor = ({ code, setCode, setLanguage }) => {
     editorRef.current = editor;
     editor.updateOptions({ 
       theme: isDarkMode ? 'vs-dark' : 'light',
-      fontSize: fontSize // Set initial font size
+      fontSize: fontSize
     });
 
-    // Enable Emmet for HTML, CSS, and JavaScript
-    monaco.languages.registerCompletionItemProvider('html', {
-      provideCompletionItems: () => {
-        return {
-          suggestions: [
-            {
-              label: 'div',
-              kind: monaco.languages.CompletionItemKind.Snippet,
-              insertText: '<div>\n\t$0\n</div>',
-              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-              documentation: 'Insert a div element'
-            }
-          ]
-        };
-      }
-    });
-
-    // Enable auto-completion and suggestions
+    // Enable Emmet and auto-completion
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.ES6,
       allowNonTsExtensions: true
@@ -107,7 +68,7 @@ const CodeEditor = ({ code, setCode, setLanguage }) => {
       <Monaco
         height="100%"
         width="100%"
-        language={detectLanguage(code)}
+        language={language}
         theme={isDarkMode ? 'vs-dark' : 'light'}
         value={code}
         onChange={handleEditorChange}
