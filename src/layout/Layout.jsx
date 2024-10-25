@@ -1,45 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import CodeEditor from '../pages/CodeEditor';
 import Footer from '../components/Footer';
-import MenuPanel from '../components/MenuPanel';
 import useThemeStore from '../store/useThemeStore';
+import HomePage from '../pages/HomePage';
+import CodespacePage from '../pages/Codespace';
 
 const Layout = () => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
-  const [code, setCode] = useState('');
-  const [language, setLanguage] = useState('plaintext');
-
-  const toggleFontSizeSlider = () => {
-    console.log('Toggling font size slider'); // Add this line
-    setShowFontSizeSlider(prevState => {
-      console.log('New slider state:', !prevState); // Add this line
-      return !prevState;
-    });
-  };
 
   return (
-    <div className={`flex flex-col min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+    <div className={`flex flex-col min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
       <header className="z-10">
         <Navbar />
       </header>
-      
+
       <main className="flex-grow flex relative">
-        <div className="flex-grow">
-          <CodeEditor 
-            code={code} 
-            setCode={setCode} 
-            setLanguage={setLanguage} 
-          />
-        </div>
-        <div className="absolute top-0 right-0 h-full">
-          <MenuPanel 
-            code={code} 
-            language={language} 
-          />
-        </div>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/:slug" element={<CodespacePage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
-      
+
       <footer className="z-10">
         <Footer />
       </footer>

@@ -37,49 +37,30 @@ const MenuPanel = ({ code, language }) => {
     document.body.removeChild(element);
   };
 
-  const handleToggleFontSizeSlider = () => {
-    if (typeof toggleFontSizeSlider === 'function') {
-      toggleFontSizeSlider();
-    } else {
-      console.error('toggleFontSizeSlider is not a function');
-    }
-  };
-
-  const buttonClasses = `
-  p-2 mb-4 
-  rounded-full md:rounded 
-  hover:bg-opacity-75 transition-transform transform hover:scale-105 
-  ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}
-`;
-
-return (
-  <div className={`w-16 md:w-20 h-full py-2 px-1 md:px-2 shadow-lg flex flex-col items-center justify-start
-    ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'}`}>
-    <button 
-      onClick={handleDownload} 
-      className={buttonClasses}
-      aria-label="Download Code"
-      title="Download Code"
-    >
-      <FaDownload className="text-lg md:text-xl" />
-    </button>
-    <div className="relative">
-      {showFontSizeSlider && (
-        <div className="absolute right-full mr-2 top-0">
-          <FontSizeSlider />
-        </div>
-      )}
+  return (
+    <div className={`w-16 md:w-20 h-full py-2 px-1 md:px-2 shadow-lg flex flex-col items-center justify-start
+      ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'}`}>
+      <button 
+        onClick={handleDownload} 
+        className={`p-2 mb-4 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-105 
+          ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}`}
+        aria-label="Download Code"
+        title="Download Code"
+      >
+        <FaDownload className="text-lg md:text-xl" />
+      </button>
       <button 
         onClick={toggleFontSizeSlider} 
-        className={buttonClasses}
-        aria-label="Toggle Font Size Slider"
-        title="Toggle Font Size"
+        className={`p-2 mb-4 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-105 
+          ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}`}
+        aria-label="Adjust Font Size"
+        title="Adjust Font Size"
       >
         <FaTextHeight className="text-lg md:text-xl" />
       </button>
+      {showFontSizeSlider && <FontSizeSlider />}
     </div>
-  </div>
-);
+  );
 };
 
 export default MenuPanel;
