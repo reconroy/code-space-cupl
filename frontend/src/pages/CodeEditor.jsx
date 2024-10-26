@@ -21,7 +21,8 @@ import go from 'highlight.js/lib/languages/go';
 import rust from 'highlight.js/lib/languages/rust';
 import swift from 'highlight.js/lib/languages/swift';
 import kotlin from 'highlight.js/lib/languages/kotlin';
-import scala from 'highlight.js/lib/languages/scala';
+import scala from 'highlight.js/lib/languages/scala'; 
+
 import php from 'highlight.js/lib/languages/php';
 import sql from 'highlight.js/lib/languages/sql';
 import yaml from 'highlight.js/lib/languages/yaml';
