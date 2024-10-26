@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "*",
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
     methods: ["GET", "POST"]
   }
 });
@@ -29,17 +29,25 @@ const pool = mysql.createPool({
 app.use(express.json());
 
 io.on('connection', (socket) => {
+  console.log('New client connected');
+
   socket.on('joinRoom', (slug) => {
+    console.log(`Client joined room: ${slug}`);
     socket.join(slug);
   });
 
   socket.on('codeChange', async ({ slug, content }) => {
     try {
+      console.log(`Code change in room ${slug}`);
       await pool.query('UPDATE codespaces SET content = ? WHERE slug = ?', [content, slug]);
-      socket.to(slug).emit('codeUpdate', content);
+      io.to(slug).emit('codeUpdate', content);
     } catch (error) {
       console.error('Error saving code:', error);
     }
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
   });
 });
 
@@ -82,6 +90,7 @@ app.post('/api/codespace', async (req, res) => {
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
+
 app.put('/api/codespace/:slug', async (req, res) => {
   const { slug } = req.params;
   const { content, language } = req.body;

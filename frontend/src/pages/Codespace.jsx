@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CodeEditor from './CodeEditor';
 import MenuPanel from './../components/MenuPanel';
+import { io } from 'socket.io-client';
 
 const debounce = (func, delay) => {
   let timeoutId;
@@ -19,12 +20,12 @@ const CodespacePage = () => {
   const [language, setLanguage] = useState('javascript');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [socket, setSocket] = useState(null);
 
   const fetchOrCreateCodespace = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Try to fetch the existing codespace
       const response = await axios.get(`/api/codespace/${slug}`);
       console.log('Fetched existing codespace:', response.data);
       setCode(response.data.content || '');
@@ -32,7 +33,6 @@ const CodespacePage = () => {
     } catch (fetchError) {
       console.log('Fetch error:', fetchError.response?.status);
       if (fetchError.response && fetchError.response.status === 404) {
-        // If codespace doesn't exist, create a new one
         try {
           console.log('Creating new codespace');
           const createResponse = await axios.post('/api/codespace', { slug, content: '', language: 'javascript' });
@@ -56,15 +56,32 @@ const CodespacePage = () => {
     fetchOrCreateCodespace();
   }, [fetchOrCreateCodespace]);
 
+  useEffect(() => {
+    const newSocket = io();
+    setSocket(newSocket);
+
+    newSocket.on('connect', () => {
+      console.log('Connected to server');
+      newSocket.emit('joinRoom', slug);
+    });
+
+    newSocket.on('codeUpdate', (updatedCode) => {
+      setCode(updatedCode);
+    });
+
+    return () => newSocket.close();
+  }, [slug]);
+
   const saveCode = useCallback(async (codeToSave, langToSave) => {
     try {
       console.log('Saving code:', { slug, content: codeToSave, language: langToSave });
       await axios.put(`/api/codespace/${slug}`, { content: codeToSave, language: langToSave });
       console.log('Code saved successfully');
+      socket.emit('codeChange', { slug, content: codeToSave });
     } catch (error) {
       console.error('Error saving code:', error);
     }
-  }, [slug]);
+  }, [slug, socket]);
 
   const debouncedSave = useCallback(
     debounce((codeToSave, langToSave) => saveCode(codeToSave, langToSave), 1000),
