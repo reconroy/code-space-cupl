@@ -19,45 +19,32 @@ const CodespacePage = () => {
   const [language, setLanguage] = useState('javascript');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isNewCodespace, setIsNewCodespace] = useState(false);
 
-  const fetchCodespace = useCallback(async () => {
+  const fetchOrCreateCodespace = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
+      // Try to fetch the existing codespace
       const response = await axios.get(`/api/codespace/${slug}`);
-      console.log('Fetched data:', response.data);
+      console.log('Fetched existing codespace:', response.data);
       setCode(response.data.content || '');
       setLanguage(response.data.language || 'javascript');
-      setIsNewCodespace(false);
-    } catch (error) {
-      console.error('Error fetching codespace:', error);
-      if (error.response) {
-        console.error('Error response:', error.response.data);
-        console.error('Error status:', error.response.status);
-        console.error('Error headers:', error.response.headers);
-      } else if (error.request) {
-        console.error('Error request:', error.request);
-      } else {
-        console.error('Error message:', error.message);
-      }
-      if (error.response && error.response.status === 404) {
-        console.log('Codespace not found, creating new one');
+    } catch (fetchError) {
+      console.log('Fetch error:', fetchError.response?.status);
+      if (fetchError.response && fetchError.response.status === 404) {
+        // If codespace doesn't exist, create a new one
         try {
+          console.log('Creating new codespace');
           const createResponse = await axios.post('/api/codespace', { slug, content: '', language: 'javascript' });
-          console.log('Create response:', createResponse.data);
-          setCode('');
-          setLanguage('javascript');
-          setIsNewCodespace(true);
+          console.log('Created new codespace:', createResponse.data);
+          setCode(createResponse.data.content || '');
+          setLanguage(createResponse.data.language || 'javascript');
         } catch (createError) {
           console.error('Error creating new codespace:', createError);
-          if (createError.response) {
-            console.error('Create error response:', createError.response.data);
-            console.error('Create error status:', createError.response.status);
-          }
           setError('Failed to create new codespace');
         }
       } else {
+        console.error('Error fetching codespace:', fetchError);
         setError('Failed to fetch codespace');
       }
     } finally {
@@ -66,15 +53,8 @@ const CodespacePage = () => {
   }, [slug]);
 
   useEffect(() => {
-    fetchCodespace();
-  }, [fetchCodespace]);
-
-  useEffect(() => {
-    if (isNewCodespace) {
-      navigate(`/${slug}`, { replace: true });
-      setIsNewCodespace(false);
-    }
-  }, [isNewCodespace, navigate, slug]);
+    fetchOrCreateCodespace();
+  }, [fetchOrCreateCodespace]);
 
   const saveCode = useCallback(async (codeToSave, langToSave) => {
     try {
