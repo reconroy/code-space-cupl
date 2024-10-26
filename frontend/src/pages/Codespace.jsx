@@ -4,6 +4,7 @@ import axios from 'axios';
 import { io } from 'socket.io-client';
 import CodeEditor from './CodeEditor';
 import MenuPanel from './../components/MenuPanel';
+import useThemeStore from '../store/useThemeStore';
 
 const debounce = (func, delay) => {
   let timeoutId;
@@ -20,6 +21,8 @@ const CodespacePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [minimapEnabled, setMinimapEnabled] = useState(true);
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -106,12 +109,16 @@ const CodespacePage = () => {
     debouncedSave(code, newLanguage);
   };
 
+  const handleToggleMinimap = (enabled) => {
+    setMinimapEnabled(enabled);
+  };
+
   if (isLoading) return <div className="flex-grow flex items-center justify-center">Loading...</div>;
   if (error) return <div className="flex-grow flex items-center justify-center text-red-500">{error}</div>;
 
   return (
-    <div className="flex-grow flex relative">
-      <div className="flex-grow">
+    <div className={`flex-grow flex ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+      <div className="flex-grow relative">
         <CodeEditor 
           code={code} 
           setCode={handleCodeChange}
@@ -119,13 +126,15 @@ const CodespacePage = () => {
           setLanguage={handleLanguageChange}
           socket={socket}
           slug={slug}
+          minimapEnabled={minimapEnabled}
         />
       </div>
-      <div className="absolute top-0 right-0 h-full">
+      <div className="flex-shrink-0">
         <MenuPanel 
           code={code}
           language={language}
           onLanguageChange={handleLanguageChange}
+          onToggleMinimap={handleToggleMinimap}
         />
       </div>
     </div>

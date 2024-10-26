@@ -22,7 +22,6 @@ import rust from 'highlight.js/lib/languages/rust';
 import swift from 'highlight.js/lib/languages/swift';
 import kotlin from 'highlight.js/lib/languages/kotlin';
 import scala from 'highlight.js/lib/languages/scala'; 
-  
 import php from 'highlight.js/lib/languages/php';
 import sql from 'highlight.js/lib/languages/sql';
 
@@ -30,40 +29,38 @@ import sql from 'highlight.js/lib/languages/sql';
 const languages = { javascript, python, css, java, cpp, xml, json, markdown, csharp, typescript, ruby, go, rust, swift, kotlin, scala, php, sql };
 Object.entries(languages).forEach(([name, lang]) => hljs.registerLanguage(name, lang));
 
-const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
+const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug, minimapEnabled }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const editorRef = useRef(null);
-  const { fontSize, setFontSize } = useFontSizeStore();
-  const [showSlider, setShowSlider] = useState(false);
+  const { fontSize } = useFontSizeStore();
   const [decorations, setDecorations] = useState([]);
 
   useEffect(() => {
     if (editorRef.current) {
       editorRef.current.updateOptions({ 
         theme: isDarkMode ? 'vs-dark' : 'light',
-        fontSize: fontSize
+        fontSize: fontSize,
+        minimap: { enabled: minimapEnabled }
       });
     }
-  }, [isDarkMode, fontSize]);
+  }, [isDarkMode, fontSize, minimapEnabled]);
 
   const handleEditorChange = (value) => {
     setCode(value);
   };
 
   const handleEditorDidMount = (editor, monaco) => {
-    // console.log("Editor mounted");
     editorRef.current = editor;
     editor.updateOptions({ 
       theme: isDarkMode ? 'vs-dark' : 'light',
-      fontSize: fontSize
+      fontSize: fontSize,
+      minimap: { enabled: minimapEnabled }
     });
 
-    // Add selection change listener
     editor.onDidChangeCursorSelection((e) => {
       if (socket) {
         const selection = editor.getSelection();
         if (selection.isEmpty()) {
-          // If selection is empty (deselected), send a clear event
           socket.emit('clearSelection', { slug });
         } else {
           socket.emit('selectionChange', { slug, selection });
@@ -71,13 +68,10 @@ const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
       }
     });
 
-    // Add content change listener
     editor.onDidChangeModelContent((e) => {
-      // Clear remote selection when content changes (e.g., paste operation)
       clearRemoteSelection();
     });
 
-    // Enable Emmet and auto-completion
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.ES6,
       allowNonTsExtensions: true
@@ -101,9 +95,7 @@ const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
     if (socket) {
       socket.on('selectionUpdate', ({ selection }) => {
         if (editorRef.current) {
-          // Clear previous decorations
           clearRemoteSelection();
-          // Create a new decoration for the received selection
           const newDecorations = editorRef.current.deltaDecorations([], [
             {
               range: selection,
@@ -130,12 +122,8 @@ const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
     };
   }, [socket]);
 
-  const toggleFontSizeSlider = () => {
-    setShowSlider(!showSlider);
-  };
-
   return (
-    <div className="relative h-full w-full">
+    <div className="h-full w-full">
       <Monaco
         height="100%"
         width="100%"
@@ -150,7 +138,7 @@ const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
           scrollBeyondLastLine: false,
           automaticLayout: true,
           wordWrap: 'on',
-          minimap: { enabled: false },
+          minimap: { enabled: minimapEnabled },
           suggestOnTriggerCharacters: true,
           quickSuggestions: true,
           autoClosingBrackets: 'always',
@@ -159,24 +147,6 @@ const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
           formatOnPaste: true
         }}
       />
-      {showSlider && (
-        <div className="absolute bottom-4 right-4 bg-white dark:bg-gray-800 p-2 rounded shadow">
-          <input
-            type="range"
-            min="12"
-            max="24"
-            value={fontSize}
-            onChange={(e) => setFontSize(Number(e.target.value))}
-            className="w-32"
-          />
-        </div>
-      )}
-      <button
-        onClick={toggleFontSizeSlider}
-        className="absolute bottom-4 right-4 bg-blue-500 text-white p-2 rounded"
-      >
-        {showSlider ? 'Hide' : 'Show'} Font Size Slider
-      </button>
     </div>
   );
 };

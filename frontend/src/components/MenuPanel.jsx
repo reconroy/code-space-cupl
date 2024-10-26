@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaDownload, FaTextHeight, FaRandom, FaCopy } from 'react-icons/fa';
+import { FaDownload, FaTextHeight, FaRandom, FaCopy, FaMap } from 'react-icons/fa';
 import useThemeStore from '../store/useThemeStore';
 import useFontSizeStore from '../store/useFontSizeStore';
 import FontSizeSlider from '../sub_components/FontSizeSlider';
@@ -28,10 +28,16 @@ const languageExtensions = {
   sql: 'sql'
 };
 
-const MenuPanel = ({ code, language }) => {
+const MenuPanel = ({ code, language, onToggleMinimap }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const { showFontSizeSlider, toggleFontSizeSlider } = useFontSizeStore();
   const [copySuccess, setCopySuccess] = useState(false);
+  const [minimapEnabled, setMinimapEnabled] = useState(true);
+
+  const handleToggleMinimap = () => {
+    setMinimapEnabled(!minimapEnabled);
+    onToggleMinimap(!minimapEnabled);
+  };
 
   const handleDownload = () => {
     const fileExtension = languageExtensions[language] || 'txt';
@@ -72,8 +78,8 @@ const MenuPanel = ({ code, language }) => {
   return (
     <div className={`w-16 md:w-20 h-full py-2 px-1 md:px-2 shadow-lg flex flex-col items-center justify-start
       ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'}`}>
-      <button 
-        onClick={handleDownload} 
+      <button
+        onClick={handleDownload}
         className={`p-3 mb-4 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-110 
           ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}`}
         aria-label="Download Code"
@@ -81,8 +87,8 @@ const MenuPanel = ({ code, language }) => {
       >
         <FaDownload className="text-xl md:text-2xl" />
       </button>
-      <button 
-        onClick={copyToClipboard} 
+      <button
+        onClick={copyToClipboard}
         className={`p-3 mb-4 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-110 
           ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}
           ${copySuccess ? 'bg-green-500' : ''}`}
@@ -92,8 +98,8 @@ const MenuPanel = ({ code, language }) => {
         <FaCopy className="text-xl md:text-2xl" />
       </button>
       <div className="relative mb-4">
-        <button 
-          onClick={toggleFontSizeSlider} 
+        <button
+          onClick={toggleFontSizeSlider}
           className={`p-3 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-110 
             ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}`}
           aria-label="Adjust Font Size"
@@ -108,7 +114,17 @@ const MenuPanel = ({ code, language }) => {
         )}
       </div>
       <button 
-        onClick={handleNewRandomCodespace} 
+        onClick={handleToggleMinimap} 
+        className={`p-3 mb-4 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-110 
+          ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}
+          ${minimapEnabled ? 'bg-blue-500' : ''}`}
+        aria-label="Toggle Minimap"
+        title={minimapEnabled ? "Disable Minimap" : "Enable Minimap"}
+      >
+        <FaMap className="text-xl md:text-2xl" />
+      </button>
+      <button
+        onClick={handleNewRandomCodespace}
         className={`p-3 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-110 
           ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-300 text-black'}`}
         aria-label="New Random Codespace"
