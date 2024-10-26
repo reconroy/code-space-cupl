@@ -46,6 +46,16 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('selectionChange', ({ slug, selection }) => {
+    console.log(`Selection change in room ${slug}`);
+    socket.to(slug).emit('selectionUpdate', { selection });
+  });
+
+  socket.on('clearSelection', ({ slug }) => {
+    console.log(`Selection cleared in room ${slug}`);
+    socket.to(slug).emit('clearSelection');
+  });
+
   socket.on('disconnect', () => {
     console.log('Client disconnected');
   });

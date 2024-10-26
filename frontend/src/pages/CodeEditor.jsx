@@ -20,11 +20,12 @@ import csharp from 'highlight.js/lib/languages/csharp';
 const languages = { javascript, python, css, java, cpp, xml, json, markdown, csharp };
 Object.entries(languages).forEach(([name, lang]) => hljs.registerLanguage(name, lang));
 
-const CodeEditor = ({ code, setCode, language, setLanguage }) => {
+const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
   const editorRef = useRef(null);
   const { fontSize, setFontSize } = useFontSizeStore();
   const [showSlider, setShowSlider] = useState(false);
+  const [decorations, setDecorations] = useState([]);
 
   useEffect(() => {
     if (editorRef.current) {
@@ -46,6 +47,25 @@ const CodeEditor = ({ code, setCode, language, setLanguage }) => {
       fontSize: fontSize
     });
 
+    // Add selection change listener
+    editor.onDidChangeCursorSelection((e) => {
+      if (socket) {
+        const selection = editor.getSelection();
+        if (selection.isEmpty()) {
+          // If selection is empty (deselected), send a clear event
+          socket.emit('clearSelection', { slug });
+        } else {
+          socket.emit('selectionChange', { slug, selection });
+        }
+      }
+    });
+
+    // Add content change listener
+    editor.onDidChangeModelContent((e) => {
+      // Clear remote selection when content changes (e.g., paste operation)
+      clearRemoteSelection();
+    });
+
     // Enable Emmet and auto-completion
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.ES6,
@@ -58,6 +78,46 @@ const CodeEditor = ({ code, setCode, language, setLanguage }) => {
       };
     `, 'ts:filename/console.d.ts');
   };
+
+  const clearRemoteSelection = () => {
+    if (editorRef.current) {
+      const clearedDecorations = editorRef.current.deltaDecorations(decorations, []);
+      setDecorations(clearedDecorations);
+    }
+  };
+
+  useEffect(() => {
+    if (socket) {
+      socket.on('selectionUpdate', ({ selection }) => {
+        if (editorRef.current) {
+          // Clear previous decorations
+          clearRemoteSelection();
+          // Create a new decoration for the received selection
+          const newDecorations = editorRef.current.deltaDecorations([], [
+            {
+              range: selection,
+              options: {
+                className: 'remote-selection',
+                hoverMessage: { value: 'Remote selection' }
+              }
+            }
+          ]);
+          setDecorations(newDecorations);
+        }
+      });
+
+      socket.on('clearSelection', () => {
+        clearRemoteSelection();
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('selectionUpdate');
+        socket.off('clearSelection');
+      }
+    };
+  }, [socket]);
 
   const toggleFontSizeSlider = () => {
     setShowSlider(!showSlider);

@@ -114,6 +114,8 @@ const CodespacePage = () => {
           setCode={handleCodeChange}
           language={language}
           setLanguage={handleLanguageChange}
+          socket={socket}
+          slug={slug}
         />
       </div>
       <div className="absolute top-0 right-0 h-full">
