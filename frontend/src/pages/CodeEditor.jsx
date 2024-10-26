@@ -15,9 +15,19 @@ import xml from 'highlight.js/lib/languages/xml';
 import json from 'highlight.js/lib/languages/json';
 import markdown from 'highlight.js/lib/languages/markdown';
 import csharp from 'highlight.js/lib/languages/csharp';
+import typescript from 'highlight.js/lib/languages/typescript';
+import ruby from 'highlight.js/lib/languages/ruby';
+import go from 'highlight.js/lib/languages/go';
+import rust from 'highlight.js/lib/languages/rust';
+import swift from 'highlight.js/lib/languages/swift';
+import kotlin from 'highlight.js/lib/languages/kotlin';
+import scala from 'highlight.js/lib/languages/scala';
+import php from 'highlight.js/lib/languages/php';
+import sql from 'highlight.js/lib/languages/sql';
+import yaml from 'highlight.js/lib/languages/yaml';
 
 // Register languages with highlight.js
-const languages = { javascript, python, css, java, cpp, xml, json, markdown, csharp };
+const languages = { javascript, python, css, java, cpp, xml, json, markdown, csharp, typescript, ruby, go, rust, swift, kotlin, scala, php, sql, yaml };
 Object.entries(languages).forEach(([name, lang]) => hljs.registerLanguage(name, lang));
 
 const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
