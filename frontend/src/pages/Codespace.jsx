@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import CodeEditor from './CodeEditor';
@@ -15,7 +15,6 @@ const debounce = (func, delay) => {
 
 const CodespacePage = () => {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('javascript');
   const [isLoading, setIsLoading] = useState(true);
@@ -45,20 +44,14 @@ const CodespacePage = () => {
       setIsLoading(false);
     });
 
-    newSocket.on('roomJoined', ({ slug, message }) => {
-      console.log(message);
-      fetchCodespace();
-    });
+    newSocket.on('roomJoined', () => fetchCodespace());
 
-    newSocket.on('roomError', ({ slug, message }) => {
-      console.error(message);
+    newSocket.on('roomError', () => {
       setError('Failed to join the room. Please try again.');
       setIsLoading(false);
     });
 
-    newSocket.on('codeUpdate', (updatedCode) => {
-      setCode(updatedCode);
-    });
+    newSocket.on('codeUpdate', setCode);
 
     return () => {
       newSocket.off('connect');
@@ -74,9 +67,9 @@ const CodespacePage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/api/codespace/${slug}`);
-      setCode(response.data.content || '');
-      setLanguage(response.data.language || 'javascript');
+      const { data } = await axios.get(`/api/codespace/${slug}`);
+      setCode(data.content || '');
+      setLanguage(data.language || 'javascript');
     } catch (error) {
       console.error('Error fetching codespace:', error);
       setError('Failed to fetch codespace. Please try again.');
@@ -87,10 +80,8 @@ const CodespacePage = () => {
 
   const saveCode = useCallback(async (codeToSave, langToSave) => {
     try {
-      console.log('Saving code:', { slug, content: codeToSave, language: langToSave });
       await axios.put(`/api/codespace/${slug}`, { content: codeToSave, language: langToSave });
-      console.log('Code saved successfully');
-      if (socket && socket.connected) {
+      if (socket?.connected) {
         socket.emit('codeChange', { slug, content: codeToSave });
       } else {
         console.error('Socket is not connected. Unable to emit codeChange event.');
@@ -115,13 +106,8 @@ const CodespacePage = () => {
     debouncedSave(code, newLanguage);
   };
 
-  if (isLoading) {
-    return <div className="flex-grow flex items-center justify-center">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="flex-grow flex items-center justify-center text-red-500">{error}</div>;
-  }
+  if (isLoading) return <div className="flex-grow flex items-center justify-center">Loading...</div>;
+  if (error) return <div className="flex-grow flex items-center justify-center text-red-500">{error}</div>;
 
   return (
     <div className="flex-grow flex relative">
