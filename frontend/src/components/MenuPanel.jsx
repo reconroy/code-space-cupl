@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaDownload, FaTextHeight, FaRandom, FaCopy, FaMap } from 'react-icons/fa';
+import { FaDownload, FaTextHeight, FaRandom, FaCopy, FaMap, FaPlay } from 'react-icons/fa';
 import useThemeStore from '../store/useThemeStore';
 import useFontSizeStore from '../store/useFontSizeStore';
 import FontSizeSlider from '../sub_components/FontSizeSlider';
@@ -75,9 +75,27 @@ const MenuPanel = ({ code, language, onToggleMinimap }) => {
     window.open(newTabUrl, '_blank');
   };
 
+  const handleRunCode = () => {
+    // Placeholder function for running code
+    console.log('Run code functionality to be implemented');
+  };
+
   return (
     <div className={`w-16 md:w-20 h-full py-2 px-1 md:px-2 shadow-lg flex flex-col items-center justify-start
       ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'}`}>
+      <button
+        onClick={handleRunCode}
+        className={`p-3 mb-4 rounded-full md:rounded hover:bg-opacity-75 transition-all transform hover:scale-110 
+          ${isDarkMode ? 'bg-gradient-to-r from-green-600 to-green-700' : 'bg-gradient-to-r from-green-400 to-green-500'} 
+          text-white shadow-lg hover:shadow-xl active:scale-95`}
+        aria-label="Run Code"
+        title="Run Code"
+      >
+        <div className="relative">
+          <FaPlay className="text-xl md:text-2xl" />
+          <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+        </div>
+      </button>
       <button
         onClick={handleDownload}
         className={`p-3 mb-4 rounded-full md:rounded hover:bg-opacity-75 transition-transform transform hover:scale-110 
