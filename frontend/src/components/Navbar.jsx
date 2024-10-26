@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaBars, FaMoon, FaSun } from 'react-icons/fa';
 import Sidebar from './Sidebar';
 import useThemeStore from '.././store/useThemeStore';
-
+import { Link } from 'react-router-dom';
 const Navbar = () => {
     const isDarkMode = useThemeStore((state) => state.isDarkMode);
     const toggleDarkMode = useThemeStore((state) => state.toggleDarkMode);
@@ -27,7 +27,7 @@ const Navbar = () => {
                         </div>
 
                         <div className="flex justify-center">
-                            <span className="text-2xl font-bold">CodeSpace</span>
+                            <Link to="/" className="text-2xl font-bold">CodeSpace</Link>
                         </div>
 
                         <div className="flex justify-end">
