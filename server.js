@@ -64,15 +64,24 @@ app.get('/api/codespace/:slug', async (req, res) => {
 app.post('/api/codespace', async (req, res) => {
   const { slug, content, language } = req.body;
   try {
-    console.log('Creating new codespace:', { slug, content, language });
-    await pool.query('INSERT INTO codespaces (slug, content, language) VALUES (?, ?, ?)', [slug, content || '', language || 'javascript']);
-    res.json({ message: 'Codespace created', slug });
+    // First, check if the codespace already exists
+    const [existingCodespace] = await pool.query('SELECT * FROM codespaces WHERE slug = ?', [slug]);
+    
+    if (existingCodespace.length > 0) {
+      // If it exists, return the existing codespace
+      console.log('Codespace already exists:', existingCodespace[0]);
+      res.json(existingCodespace[0]);
+    } else {
+      // If it doesn't exist, create a new one
+      await pool.query('INSERT INTO codespaces (slug, content, language) VALUES (?, ?, ?)', [slug, content || '', language || 'javascript']);
+      console.log('New codespace created:', { slug, content, language });
+      res.json({ message: 'Codespace created', slug });
+    }
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });
-
 app.put('/api/codespace/:slug', async (req, res) => {
   const { slug } = req.params;
   const { content, language } = req.body;
