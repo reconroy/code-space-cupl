@@ -22,13 +22,12 @@ import rust from 'highlight.js/lib/languages/rust';
 import swift from 'highlight.js/lib/languages/swift';
 import kotlin from 'highlight.js/lib/languages/kotlin';
 import scala from 'highlight.js/lib/languages/scala'; 
-
+  
 import php from 'highlight.js/lib/languages/php';
 import sql from 'highlight.js/lib/languages/sql';
-import yaml from 'highlight.js/lib/languages/yaml';
 
 // Register languages with highlight.js
-const languages = { javascript, python, css, java, cpp, xml, json, markdown, csharp, typescript, ruby, go, rust, swift, kotlin, scala, php, sql, yaml };
+const languages = { javascript, python, css, java, cpp, xml, json, markdown, csharp, typescript, ruby, go, rust, swift, kotlin, scala, php, sql };
 Object.entries(languages).forEach(([name, lang]) => hljs.registerLanguage(name, lang));
 
 const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
@@ -52,6 +51,7 @@ const CodeEditor = ({ code, setCode, language, setLanguage, socket, slug }) => {
   };
 
   const handleEditorDidMount = (editor, monaco) => {
+    // console.log("Editor mounted");
     editorRef.current = editor;
     editor.updateOptions({ 
       theme: isDarkMode ? 'vs-dark' : 'light',
